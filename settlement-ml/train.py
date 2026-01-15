@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 from typing import List
 
@@ -19,8 +20,12 @@ ROOT = Path(__file__).resolve().parent
 MODEL_PATH = ROOT / "artifacts" / "model.joblib"
 SCHEMA_PATH = ROOT / "artifacts" / "feature_schema.json"
 
-# Your generator writes to settlement-ml/transactions.csv
 DATA_PATH = ROOT / "transactions.csv"
+GEN_SCRIPT = ROOT / "generate_data.py"
+
+# Your dataset label column name:
+LABEL_COL = "fraud"
+
 
 # -----------------------------
 # Feature columns (MUST match app.py extract_features())
@@ -43,32 +48,45 @@ CATEGORICAL_COLS: List[str] = [
 
 FEATURE_COLS: List[str] = NUMERIC_COLS + CATEGORICAL_COLS
 
-# Your dataset label column name:
-LABEL_COL = "fraud"
+
+def _missing_required_cols(df: pd.DataFrame) -> List[str]:
+    return [c for c in FEATURE_COLS + [LABEL_COL] if c not in df.columns]
 
 
-def validate_df(df: pd.DataFrame) -> pd.DataFrame:
-    missing = [c for c in FEATURE_COLS + [LABEL_COL] if c not in df.columns]
+def _maybe_regenerate_dataset() -> None:
+    """
+    If generate_data.py exists, run it to produce a fresh transactions.csv.
+    """
+    if GEN_SCRIPT.exists():
+        print(f"[train] Regenerating dataset using: {GEN_SCRIPT.name}")
+        subprocess.check_call(["python", str(GEN_SCRIPT)], cwd=str(ROOT))
+    else:
+        print("[train] generate_data.py not found; cannot regenerate dataset.")
+
+
+def _coerce_and_validate(df: pd.DataFrame) -> pd.DataFrame:
+    # Ensure required columns exist
+    missing = _missing_required_cols(df)
     if missing:
         raise ValueError(
             "transactions.csv is missing required columns.\n"
-            f"Missing: {missing}\n\n"
+            f"Missing: {missing}\n"
             f"Required features: {FEATURE_COLS}\n"
             f"Required label: {LABEL_COL}\n"
         )
 
-    # Clean / coerce types
     out = df.copy()
 
+    # numeric
     for c in NUMERIC_COLS:
         out[c] = pd.to_numeric(out[c], errors="coerce").fillna(0.0)
 
+    # categorical
     for c in CATEGORICAL_COLS:
         out[c] = out[c].astype(str).fillna("")
 
+    # label
     out[LABEL_COL] = pd.to_numeric(out[LABEL_COL], errors="coerce").fillna(0).astype(int)
-
-    # ensure labels are binary 0/1
     bad_vals = set(out[LABEL_COL].unique()) - {0, 1}
     if bad_vals:
         raise ValueError(f"Label column '{LABEL_COL}' must be binary 0/1. Found: {sorted(bad_vals)}")
@@ -78,9 +96,8 @@ def validate_df(df: pd.DataFrame) -> pd.DataFrame:
 
 def build_pipeline() -> Pipeline:
     """
-    Must output a pipeline that supports:
+    Must support:
       model.predict_proba(pd.DataFrame([feats]))
-    which is exactly what app.py score_with_model() calls.
     """
     pre = ColumnTransformer(
         transformers=[
@@ -91,36 +108,51 @@ def build_pipeline() -> Pipeline:
     )
 
     clf = LogisticRegression(
-        max_iter=500,
-        class_weight="balanced",  # fraud is rare, helps training
+        max_iter=600,
+        class_weight="balanced",
         solver="lbfgs",
     )
 
     return Pipeline(steps=[("pre", pre), ("clf", clf)])
 
 
-def main() -> None:
+def load_dataset_or_regenerate() -> pd.DataFrame:
+    if not DATA_PATH.exists():
+        print(f"[train] {DATA_PATH.name} not found; attempting regeneration.")
+        _maybe_regenerate_dataset()
+
     if not DATA_PATH.exists():
         raise FileNotFoundError(
-            f"Could not find {DATA_PATH}\n\n"
-            "Fix options:\n"
-            "1) Run generate_data.py locally to create transactions.csv\n"
-            "2) Ensure transactions.csv is committed to your repo under settlement-ml/\n"
+            f"Could not find {DATA_PATH}\n"
+            "Expected transactions.csv in settlement-ml/. "
+            "Either commit it or ensure generate_data.py creates it during build."
         )
 
     print(f"[train] Loading dataset: {DATA_PATH}")
     df = pd.read_csv(DATA_PATH)
-    df = validate_df(df)
+
+    missing = _missing_required_cols(df)
+    if missing:
+        print(f"[train] Dataset missing columns {missing}; attempting regeneration.")
+        _maybe_regenerate_dataset()
+        df = pd.read_csv(DATA_PATH)
+
+    return df
+
+
+def main() -> None:
+    df = load_dataset_or_regenerate()
+    df = _coerce_and_validate(df)
 
     X = df[FEATURE_COLS].copy()
     y = df[LABEL_COL].copy()
 
-    print(f"[train] Rows: {len(df)} | Fraud rate: {df[LABEL_COL].mean():.4f}")
+    fraud_rate = float(df[LABEL_COL].mean()) if len(df) else 0.0
+    print(f"[train] Rows: {len(df)} | Fraud rate: {fraud_rate:.4f}")
 
     model = build_pipeline()
     model.fit(X, y)
 
-    # Save artifacts to the exact location app.py loads from
     (ROOT / "artifacts").mkdir(parents=True, exist_ok=True)
     joblib.dump(model, MODEL_PATH)
 
@@ -134,7 +166,6 @@ def main() -> None:
     SCHEMA_PATH.write_text(json.dumps(schema, indent=2))
 
     print(f"[train] Saved model: {MODEL_PATH}")
-    print(f"[train] Saved schema: {SCHEMA_PATH}")
     print("[train] Done.")
 
 
