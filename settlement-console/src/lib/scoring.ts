@@ -1,9 +1,9 @@
-import { Transaction, VelocityLevel } from "@/types/transaction";
+import { Transaction } from "@/types/transaction";
 
-export function computeVelocity(amount: number): VelocityLevel {
-  if (amount >= 800) return "high";
-  if (amount >= 200) return "elevated";
-  return "normal";
+export function computeVelocity(amount: number): number {
+  if (amount >= 800) return 1;
+  if (amount >= 200) return 2;
+  return 1;
 }
 
 /**

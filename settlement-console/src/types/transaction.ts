@@ -1,3 +1,6 @@
+export type VelocityLevel = "low" | "medium" | "high";
+
+
 export type TxReason = {
   feature: string;
   impact: number;
@@ -21,3 +24,6 @@ export type Transaction = {
   velocity: number;
   reasons: TxReason[];
 };
+
+
+
