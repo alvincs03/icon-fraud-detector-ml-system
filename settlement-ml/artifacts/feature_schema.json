@@ -1,0 +1,33 @@
+{
+  "label": "fraud",
+  "numeric_features": [
+    "amount",
+    "hour",
+    "weekday",
+    "velocity_5m",
+    "velocity_1h",
+    "merchant_freq",
+    "distance_km",
+    "price_z"
+  ],
+  "categorical_features": [
+    "channel",
+    "category"
+  ],
+  "all_features": [
+    "amount",
+    "hour",
+    "weekday",
+    "velocity_5m",
+    "velocity_1h",
+    "merchant_freq",
+    "distance_km",
+    "price_z",
+    "channel",
+    "category"
+  ],
+  "notes": [
+    "Categoricals are one-hot encoded with handle_unknown='ignore' so scoring won\u2019t crash on unseen categories.",
+    "timestamp/id/merchant/location are NOT model inputs; they\u2019re used to derive features like hour/weekday/distance/merchant_freq/velocity."
+  ]
+}

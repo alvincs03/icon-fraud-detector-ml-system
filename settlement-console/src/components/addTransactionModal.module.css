@@ -1,0 +1,152 @@
+/* Backdrop */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  z-index: 1000;
+}
+
+/* Modal */
+.modal {
+  width: 520px;
+  max-width: 92vw;
+  background: #fff;
+  border: 1.5px solid #222;
+  border-radius: 18px;
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #111;
+  letter-spacing: 0.2px;
+}
+
+.closeBtn {
+  width: 30px;
+  height: 30px;
+  border: 1.5px solid #222;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Body */
+.body {
+  padding: 6px 16px 16px 16px;
+}
+
+/* Single-column vertical form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* One row = label + input/select stacked (vertical) */
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #111;
+}
+
+/* Inputs */
+.input,
+.select {
+  width: 100%;
+  height: 36px;
+  border: 1.5px solid #222;
+  border-radius: 12px;
+  padding: 0 12px;
+  font-size: 13px;
+  outline: none;
+  background: #fff;
+}
+
+.input::placeholder {
+  color: #777;
+}
+
+/* Small helper text under a field */
+.helper {
+  font-size: 11px;
+  color: #444;
+  line-height: 1.3;
+  margin-top: -2px;
+}
+
+/* Validation */
+.errors {
+  margin-top: 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid #222;
+  background: #f7f7f7;
+}
+
+.errorsTitle {
+  margin: 0 0 6px 0;
+  font-size: 12px;
+  font-weight: 800;
+  color: #111;
+}
+
+.errorList {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: #111;
+}
+
+/* Footer buttons */
+.footer {
+  padding: 12px 16px 16px 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1.5px solid #222;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.btnPrimary {
+  background: #111;
+  color: #fff;
+}
+
+.btnDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

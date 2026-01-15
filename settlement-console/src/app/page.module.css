@@ -1,0 +1,356 @@
+.shell {
+  min-height: 100vh;
+  display: flex;
+  background: #ffffff;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+
+.sidebar {
+  width: 160px;
+  background: #1195ff;
+  padding: 24px 10px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.logoWrap {
+  margin-top: 4px;
+}
+
+.logo {
+  width: 100%;
+  height: auto;
+  max-width: 240px; 
+}
+
+.main {
+  flex: 1;
+  padding: 28px 40px;
+}
+
+.symbolRow {
+  height: 24px;
+  margin-left: -35px;
+  margin-bottom: 80px;
+  
+}
+
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid #222;
+  border-radius: 3px;
+}
+
+.searchWrap {
+  margin-top: 18px;
+}
+
+.searchBar {
+  width: 320px;
+  height: 30px;
+  border: 1.5px solid #222;
+  border-radius: 999px;
+}
+
+.topPill {
+  margin-top: 18px;
+}
+
+.bottomPill {
+  margin-top: 18px;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1.5px solid #222;
+  border-radius: 999px;
+  padding: 10px 14px;
+}
+
+.chevBtn {
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid #222;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.chevClosed {
+  display: inline-block;
+  transform: rotate(-90deg);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.chevOpen {
+  display: inline-block;
+  transform: rotate(0deg);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.pillAmount {
+  width: 84px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pillMerchant {
+  flex: 1;
+  font-size: 13px;
+}
+
+.pillScore {
+  width: 56px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.centerRow {
+  margin-top: 14px;
+  display: flex;
+  gap: 22px;
+}
+
+.selectedCard {
+  width: 320px;
+  border: 1.5px solid #222;
+  border-radius: 34px;
+  padding: 18px;
+  min-height: 420px;
+}
+
+.selectedInner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.selectedAmount {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.selectedMerchant {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.selectedSub {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #111;
+}
+
+.gridWrap {
+  flex: 1;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.infoCard {
+  border: 1.5px solid #222;
+  border-radius: 28px;
+  padding: 14px 16px;
+  min-height: 118px;
+}
+
+.infoTitle {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #111;
+}
+
+.infoBody {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  font-size: 13px;
+  color: #444;
+}
+
+.placeholder {
+  color: #777;
+}
+
+.scoreBig {
+  font-size: 22px;
+  font-weight: 800;
+  color: #111;
+}
+
+.emptyTop {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #444;
+}
+
+.emptyBottom {
+  height: 48px;
+}
+
+.listWrap {
+  margin-top: 18px;
+}
+
+.listStack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.listItem {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Expanded section wrapper under a pill */
+.expandedWrap {
+  padding-left: 8px; /* slight indent under the pill */
+}
+
+.pillVisited {
+  background: #d9d9d9;
+}
+
+.searchInput {
+  width: 320px;
+  height: 30px;
+  border: 1.5px solid #222;
+  border-radius: 999px;
+  padding: 0 14px;
+  font-size: 13px;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: #777;
+}
+
+.noResults {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #444;
+}
+
+.metricBtn {
+  border: 1.5px solid #222;
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.metricBtn:hover {
+  background: #f4f4f4;
+}
+
+/* clickable explain buttons (Risk Score / Velocity) */
+.explainBtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.explainBtn:hover {
+  text-decoration: underline;
+}
+
+/* risk color bands for the small pill score */
+.score_low {
+  color: #0a7a2f;
+}
+
+.score_medium {
+  color: #9a6a00;
+}
+
+.score_high {
+  color: #b00020;
+}
+
+/* big score text in expanded card */
+.scoreText_low {
+  color: #0a7a2f;
+}
+
+.scoreText_medium {
+  color: #9a6a00;
+}
+
+.scoreText_high {
+  color: #b00020;
+}
+
+/* risk badge in the selected card */
+.riskBadge {
+  border: 1.5px solid #222;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+}
+
+.badge_low {
+  background: #e9f8ef;
+}
+
+.badge_medium {
+  background: #fff3db;
+}
+
+.badge_high {
+  background: #ffe3e6;
+}

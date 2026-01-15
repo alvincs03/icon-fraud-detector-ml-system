@@ -1,0 +1,147 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 18px;
+
+  /* animation */
+  animation: overlayIn 160ms ease-out;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  width: min(560px, 95vw);
+  max-height: min(78vh, 820px);
+  overflow: auto;
+
+  background: #fff;
+  border: 1.5px solid #222;
+  border-radius: 18px;
+  padding: 14px 14px 12px;
+
+  /* animation */
+  animation: modalIn 170ms ease-out;
+}
+
+@keyframes modalIn {
+  from { transform: translateY(10px) scale(0.985); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 900;
+  color: #111;
+}
+
+.subtitle {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #444;
+  line-height: 1.35;
+}
+
+.closeBtn {
+  border: 1.5px solid #222;
+  background: #fff;
+  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.body {
+  margin-top: 12px;
+}
+
+.groupStack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.groupTitle {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #111;
+  margin-bottom: 8px;
+}
+
+.reasonList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reasonCard {
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: #fafafa;
+}
+
+.reasonHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.feature {
+  font-size: 12px;
+  font-weight: 900;
+  color: #111;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.impact {
+  font-size: 12px;
+  font-weight: 900;
+  color: #111;
+}
+
+.note {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #222;
+  line-height: 1.35;
+}
+
+.empty {
+  font-size: 13px;
+  color: #444;
+}
+
+.footer {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.okBtn {
+  border: 1.5px solid #222;
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-weight: 800;
+}
