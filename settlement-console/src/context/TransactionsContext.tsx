@@ -7,6 +7,7 @@ import { enrichTransaction } from "@/lib/scoring";
 import { fetchScore } from "@/lib/fetchScore";
 
 type NewTransactionInput = {
+  userId: string;
   amount: number;
   merchant: string;
   location: string;
