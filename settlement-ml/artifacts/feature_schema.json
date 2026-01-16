@@ -1,6 +1,5 @@
 {
-  "label": "fraud",
-  "numeric_features": [
+  "numeric": [
     "amount",
     "hour",
     "weekday",
@@ -10,11 +9,11 @@
     "distance_km",
     "price_z"
   ],
-  "categorical_features": [
+  "categorical": [
     "channel",
     "category"
   ],
-  "all_features": [
+  "all": [
     "amount",
     "hour",
     "weekday",
@@ -26,8 +25,6 @@
     "channel",
     "category"
   ],
-  "notes": [
-    "Categoricals are one-hot encoded with handle_unknown='ignore' so scoring won\u2019t crash on unseen categories.",
-    "timestamp/id/merchant/location are NOT model inputs; they\u2019re used to derive features like hour/weekday/distance/merchant_freq/velocity."
-  ]
+  "label": "fraud",
+  "notes": "Must match app.py extract_features() output keys."
 }

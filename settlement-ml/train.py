@@ -18,8 +18,8 @@ ROOT = Path(__file__).resolve().parent
 MODEL_PATH = ROOT / "artifacts" / "model.joblib"
 SCHEMA_PATH = ROOT / "artifacts" / "feature_schema.json"
 
-DATA_PATH = ROOT / "transactions.csv"
-GEN_SCRIPT = ROOT / "generate_data.py"
+DATA_PATH = ROOT / "data" / "transactions.csv"
+GEN_SCRIPT = ROOT / "data" / "generate_data.py"
 
 LABEL_COL = "fraud"
 
@@ -130,7 +130,7 @@ def load_df() -> pd.DataFrame:
     if not DATA_PATH.exists():
         raise FileNotFoundError(
             f"Could not find {DATA_PATH}. "
-            "Either commit settlement-ml/transactions.csv or ensure generate_data.py creates it."
+            "Either commit settlement-ml/data/transactions.csv or ensure data/generate_data.py creates it."
         )
 
     df = pd.read_csv(DATA_PATH)
