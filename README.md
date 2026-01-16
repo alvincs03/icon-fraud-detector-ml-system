@@ -2,6 +2,8 @@
 
 A full-stack, machine-learning–powered fraud detection platform that analyzes financial transactions in real time, assigns risk scores, and provides explainable reasoning through a secure web interface.
 
+# 🌐 Live Demo: https://icon-fraud-detector-ml-system-762r.vercel.app/
+
 ---
 
 ## **Problem Statement**
