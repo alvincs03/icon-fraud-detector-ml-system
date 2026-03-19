@@ -23,18 +23,21 @@
 .addBtn {
   width: 100%;
   max-width: 150px;
-  border: 1.5px solid #ffffff;
-  background: transparent;
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 12px;
-  padding: 10px 12px;
+  border: 2px solid #ffffff;
+  background: #ffffff;
+  color: #1195ff;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 12px 14px;
   border-radius: 14px;
   cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  letter-spacing: 0.2px;
 }
 
 .addBtn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: #e8f3ff;
+  transform: scale(1.03);
 }
 
 
@@ -70,6 +73,10 @@
   padding: 10px 12px;
   border-radius: 14px;
   cursor: pointer;
+}
+
+.authBtn:hover:not(:disabled) {
+  background: #e8f3ff;
 }
 
 .authBtn:disabled {

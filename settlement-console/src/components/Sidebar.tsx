@@ -22,7 +22,7 @@ export default function Sidebar({ onAddClick }: { onAddClick: () => void }) {
       </div>
 
       <button className={styles.addBtn} onClick={onAddClick} type="button">
-        Add Transaction
+        + Add Transaction
       </button>
 
       <div className={styles.authBlock}>

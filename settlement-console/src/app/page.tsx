@@ -47,15 +47,15 @@ function TransactionPill({
   const band = riskBand(tx.riskScore);
 
   return (
-    <div className={[styles.pill, hasBeenOpened ? styles.pillVisited : ""].join(" ")}>
-      <button
-        type="button"
-        className={styles.chevBtn}
-        aria-expanded={isOpen}
-        onClick={onToggle}
-      >
-        <span className={isOpen ? styles.chevOpen : styles.chevClosed}>▾</span>
-      </button>
+    <div
+      className={[styles.pill, hasBeenOpened ? styles.pillVisited : ""].join(" ")}
+      onClick={onToggle}
+      role="button"
+      tabIndex={0}
+      aria-expanded={isOpen}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onToggle(); } }}
+    >
+      <span className={isOpen ? styles.chevOpen : styles.chevClosed}>▾</span>
 
       <div className={styles.pillAmount}>${tx.amount.toFixed(2)}</div>
 
@@ -66,6 +66,8 @@ function TransactionPill({
       <div className={[styles.pillScore, styles[`score_${band}`]].join(" ")}>
         {tx.riskScore.toFixed(1)}
       </div>
+
+      <div className={styles.pillExpandHint}>{isOpen ? "collapse" : "expand ↓"}</div>
     </div>
   );
 }
@@ -118,6 +120,7 @@ function ExpandedTransaction({
               <button
                 type="button"
                 className={styles.explainBtn}
+                title="Click for details"
                 onClick={() =>
                   onExplain(
                     "Velocity",
@@ -127,6 +130,7 @@ function ExpandedTransaction({
                 }
               >
                 {tx.velocity}
+                <span className={styles.infoIcon}>ⓘ</span>
               </button>
             </InfoCard>
 
@@ -134,6 +138,7 @@ function ExpandedTransaction({
               <button
                 type="button"
                 className={styles.explainBtn}
+                title="Click to see why"
                 onClick={() =>
                   onExplain(
                     "Risk Score",
@@ -145,6 +150,7 @@ function ExpandedTransaction({
                 <span className={[styles.scoreBig, styles[`scoreText_${band}`]].join(" ")}>
                   {tx.riskScore.toFixed(1)}
                 </span>
+                <span className={styles.infoIcon}>ⓘ</span>
               </button>
             </InfoCard>
           </div>
@@ -213,9 +219,6 @@ export default function Home() {
         <div className={styles.headerRow}>
           <div className={styles.headerLeft}>
             <h1 className={styles.h1}>HELLO {session?.user?.name || session?.user?.email|| "THERE"}!</h1>
-            <div className={styles.checkboxRow}>
-              <div className={styles.checkbox} />
-            </div>
           </div>
 
           <div className={styles.searchWrap}>
@@ -231,7 +234,10 @@ export default function Home() {
 
         <div className={styles.listWrap}>
           {!hasTx ? (
-            <div className={styles.emptyTop}>No transactions yet. Add one from the sidebar.</div>
+            <div className={styles.emptyState}>
+              <div className={styles.emptyTitle}>No transactions yet</div>
+              <div className={styles.emptyHint}>← Click <strong>+ Add Transaction</strong> in the sidebar to get started</div>
+            </div>
           ) : filtered.length === 0 ? (
             <div className={styles.noResults}>No results found.</div>
           ) : (
