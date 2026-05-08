@@ -26,7 +26,6 @@ Thumbs.db
 payload.json
 
 
-# ML model artifacts (too large for GitHub)
-settlement-ml/artifacts/*.joblib
+# ML model artifacts
+# model.joblib is included (1.4 MB) so Render can serve it without a retrain step
 settlement-ml/models/*.joblib
-settlement-ml/**/*.joblib

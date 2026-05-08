@@ -140,7 +140,7 @@ export default function ExplainPopup({
 
         <div className={styles.body}>
           {(!reasons || reasons.length === 0) ? (
-            <div className={styles.empty}>No explanation available yet.</div>
+            <div className={styles.empty}>Scoring in progress — check back in a moment.</div>
           ) : (
             <div className={styles.groupStack}>
               {GROUP_ORDER.map((g) => {

@@ -212,8 +212,14 @@ export default function Home() {
   const [explainOpen, setExplainOpen] = useState(false);
   const [explainTitle, setExplainTitle] = useState("");
   const [explainSubtitle, setExplainSubtitle] = useState("");
-  const [explainReasons, setExplainReasons] = useState<Transaction["reasons"]>([]);
+  const [explainTxId, setExplainTxId] = useState<string | null>(null);
   const [explainMode, setExplainMode] = useState<"risk" | "velocity">("risk");
+
+  // Derived live from transactions so popup auto-updates when async scoring finishes
+  const explainReasons = useMemo(
+    () => transactions.find((t) => t.id === explainTxId)?.reasons ?? [],
+    [transactions, explainTxId]
+  );
 
   // Stats derived from all transactions
   const stats = useMemo(() => {
@@ -247,7 +253,7 @@ export default function Home() {
   const openExplain = (tx: Transaction, title: string, subtitle: string, mode: "risk" | "velocity") => {
     setExplainTitle(title);
     setExplainSubtitle(subtitle);
-    setExplainReasons(tx.reasons || []);
+    setExplainTxId(tx.id);
     setExplainMode(mode);
     setExplainOpen(true);
   };
@@ -263,7 +269,7 @@ export default function Home() {
         subtitle={explainSubtitle}
         mode={explainMode}
         reasons={explainReasons}
-        onClose={() => setExplainOpen(false)}
+        onClose={() => { setExplainOpen(false); setExplainTxId(null); }}
       />
 
       <main className={styles.main}>
