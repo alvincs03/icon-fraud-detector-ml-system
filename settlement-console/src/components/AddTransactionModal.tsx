@@ -66,7 +66,6 @@ export default function AddTransactionModal({ open, onClose }: Props) {
   const [location, setLocation] = useState<string>("");
   const [channel, setChannel] = useState<Transaction["channel"]>("card");
   const [category, setCategory] = useState<string>("Other");
-  const [userId, setUserId] = useState<string>("demo_user");
 
   // Date + time + tz controls
   const [date, setDate] = useState<string>(() => {
@@ -88,7 +87,6 @@ export default function AddTransactionModal({ open, onClose }: Props) {
     setLocation("");
     setChannel("card");
     setCategory("Other");
-    setUserId("demo_user");
 
     const d = new Date();
     const yyyy = d.getFullYear();
@@ -109,10 +107,8 @@ export default function AddTransactionModal({ open, onClose }: Props) {
 
     if (!merchant.trim()) e.push("Merchant is required.");
     if (!location.trim()) e.push("Location is required.");
-    if (!userId.trim()) e.push("User ID is required.");
 
     if (!date.trim()) e.push("Date is required.");
-    // basic YYYY-MM-DD check
     if (date.trim() && !/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) e.push("Date must be YYYY-MM-DD.");
 
     if (!time.trim()) e.push("Time is required.");
@@ -121,7 +117,7 @@ export default function AddTransactionModal({ open, onClose }: Props) {
     if (!tz.trim() || !/^[+-]\d{2}:\d{2}$/.test(tz.trim())) e.push("Timezone must be an offset like -06:00.");
 
     return e;
-  }, [amount, merchant, location, userId, date, time, tz]);
+  }, [amount, merchant, location, date, time, tz]);
 
   const canSubmit = errors.length === 0;
 
@@ -132,7 +128,7 @@ export default function AddTransactionModal({ open, onClose }: Props) {
     const iso = buildIsoTimestamp(date.trim(), time.trim(), tz.trim());
 
     addTransaction({
-      userId: userId.trim(),
+      userId: "demo_user",
       amount: Number(amount),
       merchant: merchant.trim(),
       location: location.trim(),
@@ -147,13 +143,12 @@ export default function AddTransactionModal({ open, onClose }: Props) {
   if (!open) return null;
 
   return (
-    <div className={styles.backdrop} onClick={onClose} role="presentation">
+    <div className={styles.backdrop} role="presentation">
       <div
         className={styles.modal}
         role="dialog"
         aria-modal="true"
         aria-label="Add Transaction"
-        onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.header}>
           <h2 className={styles.title}>Add Transaction</h2>
@@ -218,16 +213,6 @@ export default function AddTransactionModal({ open, onClose }: Props) {
                   </option>
                 ))}
               </select>
-            </div>
-
-            <div className={styles.row}>
-              <label className={styles.label}>User ID (temp)</label>
-              <input
-                className={styles.input}
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                placeholder="demo_user"
-              />
             </div>
 
             <div className={styles.row}>

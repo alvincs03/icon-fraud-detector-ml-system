@@ -1,40 +1,23 @@
 .shell {
   min-height: 100vh;
   display: flex;
-  background: #ffffff;
+  background: #f8f9fc;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-}
-
-.sidebar {
-  width: 160px;
-  background: #1195ff;
-  padding: 24px 10px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-}
-
-.logoWrap {
-  margin-top: 4px;
-}
-
-.logo {
-  width: 100%;
-  height: auto;
-  max-width: 240px; 
 }
 
 .main {
   flex: 1;
   padding: 28px 40px;
+  min-width: 0;
 }
 
 .symbolRow {
   height: 24px;
   margin-left: -35px;
   margin-bottom: 80px;
-  
 }
+
+/* ── Header ─────────────────────────────────────────────── */
 
 .headerRow {
   display: flex;
@@ -53,55 +36,165 @@
   font-size: 26px;
   font-weight: 700;
   letter-spacing: 0.5px;
+  color: #111;
 }
 
-.checkboxRow {
+/* ── Stats bar ───────────────────────────────────────────── */
+
+.statsRow {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  gap: 14px;
+  margin-top: 22px;
 }
 
-.checkbox {
-  width: 14px;
-  height: 14px;
-  border: 1.5px solid #222;
-  border-radius: 3px;
+.statCard {
+  flex: 1;
+  border: 1.5px solid #e2e5ee;
+  border-radius: 18px;
+  padding: 16px 20px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
+
+.statAccent_high {
+  border-color: #f5c6cb;
+  background: #fff8f8;
+}
+
+.statAccent_medium {
+  border-color: #fde8b0;
+  background: #fffdf5;
+}
+
+.statAccent_neutral {
+  border-color: #e2e5ee;
+  background: #fff;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111;
+  line-height: 1;
+}
+
+.statLabel {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Filter tabs ─────────────────────────────────────────── */
+
+.filterRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.filterBtn {
+  height: 30px;
+  padding: 0 14px;
+  border: 1.5px solid #ddd;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.filterBtn:hover {
+  border-color: #1195ff;
+  color: #1195ff;
+}
+
+.filterBtnActive {
+  background: #111;
+  border-color: #111;
+  color: #fff;
+}
+
+.filterBtn_high.filterBtnActive {
+  background: #b00020;
+  border-color: #b00020;
+}
+
+.filterBtn_medium.filterBtnActive {
+  background: #9a6a00;
+  border-color: #9a6a00;
+}
+
+.filterBtn_low.filterBtnActive {
+  background: #0a7a2f;
+  border-color: #0a7a2f;
+}
+
+/* ── Search ──────────────────────────────────────────────── */
 
 .searchWrap {
   margin-top: 18px;
 }
 
-.searchBar {
-  width: 320px;
-  height: 30px;
-  border: 1.5px solid #222;
+.searchInput {
+  width: 280px;
+  height: 34px;
+  border: 1.5px solid #ddd;
   border-radius: 999px;
+  padding: 0 14px;
+  font-size: 13px;
+  outline: none;
+  background: #fff;
+  transition: border-color 0.15s;
 }
 
-.topPill {
+.searchInput:focus {
+  border-color: #1195ff;
+}
+
+.searchInput::placeholder {
+  color: #aaa;
+}
+
+/* ── Transaction pill ────────────────────────────────────── */
+
+.listWrap {
   margin-top: 18px;
 }
 
-.bottomPill {
-  margin-top: 18px;
+.listStack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.listItem {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .pill {
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 1.5px solid #222;
+  border: 1.5px solid #e2e5ee;
   border-radius: 999px;
-  padding: 10px 14px;
+  padding: 10px 14px 10px 0;
   cursor: pointer;
-  transition: background 0.12s;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
   user-select: none;
+  background: #fff;
+  overflow: hidden;
 }
 
 .pill:hover {
-  background: #f0f5ff;
   border-color: #1195ff;
+  box-shadow: 0 2px 8px rgba(17, 149, 255, 0.12);
 }
 
 .pill:focus-visible {
@@ -109,12 +202,29 @@
   outline-offset: 2px;
 }
 
+/* Coloured left-edge accent bar */
+.pillRiskBar {
+  width: 5px;
+  min-width: 5px;
+  align-self: stretch;
+  border-radius: 999px 0 0 999px;
+  flex-shrink: 0;
+}
+
+.riskBar_high  { background: #b00020; }
+.riskBar_medium { background: #d4860a; }
+.riskBar_low   { background: #0a7a2f; }
+
+.pillBand_high:hover  { border-color: #b00020; box-shadow: 0 2px 8px rgba(176,0,32,0.12); }
+.pillBand_medium:hover { border-color: #d4860a; box-shadow: 0 2px 8px rgba(212,134,10,0.12); }
+.pillBand_low:hover   { border-color: #0a7a2f; box-shadow: 0 2px 8px rgba(10,122,47,0.12); }
+
 .chevClosed {
   display: inline-block;
   transform: rotate(-90deg);
   font-size: 14px;
   line-height: 1;
-  color: #555;
+  color: #aaa;
   transition: transform 0.15s;
   flex-shrink: 0;
 }
@@ -128,43 +238,69 @@
   flex-shrink: 0;
 }
 
-.pillExpandHint {
-  margin-left: auto;
-  font-size: 11px;
-  color: #888;
-  white-space: nowrap;
-}
-
 .pillAmount {
   width: 84px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
+  color: #111;
 }
 
 .pillMerchant {
   flex: 1;
   font-size: 13px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pillCategory {
+  font-size: 11px;
+  color: #999;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 80px;
+  text-align: right;
 }
 
 .pillScore {
-  width: 56px;
+  width: 42px;
   text-align: right;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.pillExpandHint {
+  margin-left: 4px;
+  font-size: 11px;
+  color: #bbb;
+  white-space: nowrap;
+}
+
+.pillVisited {
+  background: #fafbfc;
+}
+
+/* ── Expanded section ────────────────────────────────────── */
+
+.expandedWrap {
+  padding-left: 6px;
 }
 
 .centerRow {
-  margin-top: 14px;
   display: flex;
   gap: 22px;
 }
 
 .selectedCard {
-  width: 320px;
-  border: 1.5px solid #222;
-  border-radius: 34px;
+  width: 300px;
+  flex-shrink: 0;
+  border: 1.5px solid #e2e5ee;
+  border-radius: 28px;
   padding: 18px;
-  min-height: 420px;
+  min-height: 380px;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
 }
 
 .selectedInner {
@@ -177,161 +313,113 @@
 }
 
 .selectedAmount {
-  font-size: 26px;
-  font-weight: 700;
-}
-
-.selectedMerchant {
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.selectedSub {
-  margin-top: 12px;
-  font-size: 13px;
+  font-size: 28px;
+  font-weight: 800;
   color: #111;
 }
 
+.selectedMerchant {
+  font-size: 18px;
+  font-weight: 700;
+  color: #222;
+  text-align: center;
+}
+
+.selectedSub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #888;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Risk meter ──────────────────────────────────────────── */
+
+.riskMeter {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.riskMeterTrack {
+  width: 100%;
+  height: 8px;
+  background: #eee;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.riskMeterFill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.meterFill_high   { background: linear-gradient(90deg, #f7c5ca, #b00020); }
+.meterFill_medium { background: linear-gradient(90deg, #ffe6a0, #d4860a); }
+.meterFill_low    { background: linear-gradient(90deg, #c4edcf, #0a7a2f); }
+
+.riskMeterLabel {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ── Info grid ───────────────────────────────────────────── */
+
 .gridWrap {
   flex: 1;
+  min-width: 0;
 }
 
 .infoGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 12px;
 }
 
 .infoCard {
-  border: 1.5px solid #222;
-  border-radius: 28px;
+  border: 1.5px solid #e2e5ee;
+  border-radius: 22px;
   padding: 14px 16px;
-  min-height: 118px;
+  min-height: 110px;
+  background: #fff;
 }
 
 .infoTitle {
   text-align: center;
   font-size: 11px;
   font-weight: 700;
-  color: #111;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .infoBody {
-  margin-top: 18px;
+  margin-top: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 60px;
+  min-height: 52px;
   font-size: 13px;
-  color: #444;
+  color: #333;
+  font-weight: 500;
 }
 
 .placeholder {
-  color: #777;
+  color: #bbb;
 }
 
-.scoreBig {
-  font-size: 22px;
-  font-weight: 800;
-  color: #111;
-}
+/* ── Explain button ──────────────────────────────────────── */
 
-.emptyTop {
-  margin-top: 10px;
-  font-size: 13px;
-  color: #444;
-}
-
-.emptyState {
-  margin-top: 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.emptyTitle {
-  font-size: 18px;
-  font-weight: 700;
-  color: #222;
-}
-
-.emptyHint {
-  font-size: 14px;
-  color: #555;
-  line-height: 1.5;
-}
-
-.emptyBottom {
-  height: 48px;
-}
-
-.listWrap {
-  margin-top: 18px;
-}
-
-.listStack {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.listItem {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* Expanded section wrapper under a pill */
-.expandedWrap {
-  padding-left: 8px; /* slight indent under the pill */
-}
-
-.pillVisited {
-  border-color: #bbb;
-  background: #fafafa;
-}
-
-.searchInput {
-  width: 320px;
-  height: 30px;
-  border: 1.5px solid #222;
-  border-radius: 999px;
-  padding: 0 14px;
-  font-size: 13px;
-  outline: none;
-}
-
-.searchInput::placeholder {
-  color: #777;
-}
-
-.noResults {
-  margin-top: 10px;
-  font-size: 13px;
-  color: #444;
-}
-
-.metricBtn {
-  border: 1.5px solid #222;
-  background: #fff;
-  border-radius: 999px;
-  padding: 8px 12px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.metricBtn:hover {
-  background: #f4f4f4;
-}
-
-/* clickable explain buttons (Risk Score / Velocity) */
 .explainBtn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  border: 1.5px solid #ccc;
-  background: #f8f9ff;
+  border: 1.5px solid #ddd;
+  background: #f6f8ff;
   border-radius: 999px;
   cursor: pointer;
   padding: 5px 12px;
@@ -351,50 +439,61 @@
   line-height: 1;
 }
 
-/* risk color bands for the small pill score */
-.score_low {
-  color: #0a7a2f;
+/* ── Score text in expanded ──────────────────────────────── */
+
+.scoreBig {
+  font-size: 22px;
+  font-weight: 800;
 }
 
-.score_medium {
-  color: #9a6a00;
-}
+/* ── Risk colour tokens ──────────────────────────────────── */
 
-.score_high {
-  color: #b00020;
-}
+.score_low     { color: #0a7a2f; }
+.score_medium  { color: #9a6a00; }
+.score_high    { color: #b00020; }
 
-/* big score text in expanded card */
-.scoreText_low {
-  color: #0a7a2f;
-}
+.scoreText_low    { color: #0a7a2f; }
+.scoreText_medium { color: #9a6a00; }
+.scoreText_high   { color: #b00020; }
 
-.scoreText_medium {
-  color: #9a6a00;
-}
+/* ── Risk badge in selected card ─────────────────────────── */
 
-.scoreText_high {
-  color: #b00020;
-}
-
-/* risk badge in the selected card */
 .riskBadge {
-  border: 1.5px solid #222;
+  border: 1.5px solid transparent;
   border-radius: 999px;
-  padding: 6px 12px;
+  padding: 5px 14px;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.4px;
 }
 
-.badge_low {
-  background: #e9f8ef;
+.badge_low    { background: #e9f8ef; border-color: #c3ecd0; color: #0a7a2f; }
+.badge_medium { background: #fff3db; border-color: #fde8b0; color: #9a6a00; }
+.badge_high   { background: #ffe3e6; border-color: #f5c6cb; color: #b00020; }
+
+/* ── Empty states ────────────────────────────────────────── */
+
+.emptyState {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.badge_medium {
-  background: #fff3db;
+.emptyTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #222;
 }
 
-.badge_high {
-  background: #ffe3e6;
+.emptyHint {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.noResults {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #888;
 }

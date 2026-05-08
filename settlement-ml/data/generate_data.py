@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import random
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -14,7 +15,7 @@ import pandas as pd
 # -----------------------------
 @dataclass
 class Config:
-    n_rows: int = 30000
+    n_rows: int = 55000
     fraud_base_rate: float = 0.02
 
     min_gap_s: int = 5
@@ -158,6 +159,24 @@ def price_zscore(amount: float, merchant: str, typical_price: Dict[str, float]) 
     return float(clamp(z, -6, 6))
 
 
+def merchant_entropy_score(recent_merchants: List[str]) -> float:
+    """Shannon entropy of merchant distribution in recent window. Higher = more diverse = more suspicious."""
+    if not recent_merchants:
+        return 0.0
+    counts: Dict[str, int] = {}
+    for m in recent_merchants:
+        counts[m] = counts.get(m, 0) + 1
+    total = len(recent_merchants)
+    entropy = 0.0
+    for c in counts.values():
+        p = c / total
+        if p > 0:
+            entropy -= p * math.log2(p)
+    # Normalize to [0, 1] by dividing by log2(total unique) max entropy
+    max_entropy = math.log2(len(counts)) if len(counts) > 1 else 1.0
+    return float(clamp(entropy / max_entropy if max_entropy > 0 else 0.0, 0.0, 1.0))
+
+
 # -----------------------------
 # Fraud labeling logic (synthetic)
 # -----------------------------
@@ -171,6 +190,8 @@ def fraud_probability(
     price_z: float,
     channel: str,
     category: str,
+    recency_s: float,
+    merchant_entropy: float,
 ) -> float:
     p = CFG.fraud_base_rate
 
@@ -212,13 +233,24 @@ def fraud_probability(
     if channel == "wallet":
         p += 0.03
 
-    # Category nudges (optional, but helps realism)
     if category in {"Electronics", "Travel", "Hotels"} and amount >= 300:
         p += 0.08
     if category in {"ATM/Cash Withdrawal"}:
         p += 0.06
     if category in {"Fees/Interest"} and amount >= 150:
         p += 0.04
+
+    # Recency: very short time since last tx is suspicious (rapid-fire fraud)
+    if 0 < recency_s < 30:
+        p += 0.12
+    elif recency_s < 120:
+        p += 0.06
+
+    # High merchant entropy in recent window = hitting many different merchants fast
+    if merchant_entropy > 0.85:
+        p += 0.10
+    elif merchant_entropy > 0.65:
+        p += 0.05
 
     # Interaction boosts (key)
     if amount >= CFG.high_amount_threshold and distance_km > 500:
@@ -227,6 +259,8 @@ def fraud_probability(
         p += 0.25
     if distance_km > 500 and velocity_5m >= 3:
         p += 0.25
+    if recency_s < 60 and velocity_5m >= 3:
+        p += 0.15
 
     return float(clamp(p, 0.0, 0.95))
 
@@ -247,6 +281,7 @@ def main() -> None:
 
     merchant_counts: Dict[str, int] = {m: 0 for m in merchants}
     timestamps: List[datetime] = []
+    merchant_history_1h: List[str] = []  # merchants in 1h window
 
     current_time = datetime.now().replace(microsecond=0)
 
@@ -276,6 +311,15 @@ def main() -> None:
 
         pz = price_zscore(amount, merchant, typical_price)
 
+        # Recency: seconds since previous transaction (large value = first tx)
+        recency_s = float(gap_s) if i > 0 else 3600.0
+        recency_s = float(clamp(recency_s, 0, 86400))
+
+        # Merchant entropy in 1h window (take last velocity_1h entries from history)
+        recent_merchants_1h = merchant_history_1h[-velocity_1h:] if velocity_1h > 0 else []
+        m_entropy = merchant_entropy_score(recent_merchants_1h + [merchant])
+        merchant_history_1h.append(merchant)
+
         p_fraud = fraud_probability(
             amount=amount,
             velocity_5m=velocity_5m,
@@ -286,8 +330,12 @@ def main() -> None:
             price_z=pz,
             channel=channel,
             category=category,
+            recency_s=recency_s,
+            merchant_entropy=m_entropy,
         )
-        fraud = 1 if random.random() < p_fraud else 0
+        # Deterministic label with small Gaussian jitter to avoid perfectly sharp boundaries
+        jitter = random.gauss(0, 0.04)
+        fraud = 1 if (p_fraud + jitter) >= 0.42 else 0
 
         merchant_counts[merchant] += 1
 
@@ -299,7 +347,7 @@ def main() -> None:
                 "merchant": merchant,
                 "location": "synthetic",
                 "channel": channel,
-                "category": category,  # NEW
+                "category": category,
                 "hour": hour,
                 "weekday": weekday,
                 "velocity_5m": velocity_5m,
@@ -307,6 +355,8 @@ def main() -> None:
                 "merchant_freq": merchant_freq,
                 "distance_km": distance_km,
                 "price_z": pz,
+                "recency_s": recency_s,
+                "merchant_entropy": m_entropy,
                 "fraud": fraud,
             }
         )

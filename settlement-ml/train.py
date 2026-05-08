@@ -160,20 +160,18 @@ def main() -> None:
     model = build_pipeline()
     model.fit(X, y)
 
+    from sklearn.metrics import classification_report
+    from sklearn.model_selection import train_test_split
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    model_eval = build_pipeline()
+    model_eval.fit(X_train, y_train)
+    y_pred = model_eval.predict(X_test)
+    print("\n[train] Classification Report:")
+    print(classification_report(y_test, y_pred, target_names=["legit", "fraud"]))
+
     (ROOT / "artifacts").mkdir(parents=True, exist_ok=True)
     joblib.dump(model, MODEL_PATH)
-
-    schema = {
-        "numeric": NUMERIC_COLS,
-        "categorical": CATEGORICAL_COLS,
-        "all": FEATURE_COLS,
-        "label": LABEL_COL,
-        "notes": "Must match app.py extract_features() output keys.",
-    }
-    SCHEMA_PATH.write_text(json.dumps(schema, indent=2))
-
-    print(f"[train] Saved model: {MODEL_PATH}")
-    print("[train] Done.")
 
 
 if __name__ == "__main__":

@@ -1,11 +1,10 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-
-import math
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,7 +16,7 @@ import joblib
 # -----------------------------
 # FastAPI app
 # -----------------------------
-app = FastAPI(title="Settlement ML", version="0.2.0")
+app = FastAPI(title="Settlement ML", version="0.3.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -65,12 +64,7 @@ class ScoreResponse(BaseModel):
 # Config / paths
 # -----------------------------
 ROOT = Path(__file__).resolve().parent
-
-# IMPORTANT: training saves to /artifacts/model.joblib
 MODEL_PATH = ROOT / "artifacts" / "model.joblib"
-
-# (Optional) schema you wrote in training — not required to run,
-# but useful for debugging/validation later.
 SCHEMA_PATH = ROOT / "artifacts" / "feature_schema.json"
 
 
@@ -84,31 +78,33 @@ CFG = FeatureConfig()
 
 
 # -----------------------------
-# Globals (load once)
+# Globals (load once at startup)
 # -----------------------------
-MODEL: Optional[Any] = None
+PIPELINE: Optional[Any] = None
+THRESHOLD: float = 0.5
 
 
 @app.on_event("startup")
 def _load_model_on_startup() -> None:
-    global MODEL
+    global PIPELINE, THRESHOLD
     if MODEL_PATH.exists():
-        MODEL = joblib.load(MODEL_PATH)
+        artifact = joblib.load(MODEL_PATH)
+        if isinstance(artifact, dict):
+            PIPELINE = artifact.get("pipeline")
+            THRESHOLD = float(artifact.get("threshold", 0.5))
+        else:
+            # Legacy: raw pipeline object
+            PIPELINE = artifact
+            THRESHOLD = 0.5
     else:
-        MODEL = None
+        PIPELINE = None
+        THRESHOLD = 0.5
 
 
 # -----------------------------
 # Utilities
 # -----------------------------
 def parse_iso(ts: str) -> datetime:
-    """
-    Accepts ISO timestamps like:
-      2026-01-06T21:10:00-06:00
-      2026-01-06T21:10:00Z
-      2026-01-06T21:10:00
-    If no timezone is present, assume UTC.
-    """
     s = ts.strip()
     if s.endswith("Z"):
         s = s[:-1] + "+00:00"
@@ -145,11 +141,6 @@ def count_in_window(times: List[datetime], now: datetime, window_s: int) -> int:
 
 
 def location_to_distance_km(location: Optional[str]) -> float:
-    """
-    Current rule:
-    - If location looks like "lat,lon", compute distance from a fixed home baseline
-    - Otherwise 0.0 (unknown)
-    """
     if not location:
         return 0.0
     s = location.strip()
@@ -159,7 +150,7 @@ def location_to_distance_km(location: Optional[str]) -> float:
             try:
                 lat = float(parts[0])
                 lon = float(parts[1])
-                home_lat, home_lon = 41.8781, -87.6298  # baseline
+                home_lat, home_lon = 41.8781, -87.6298
                 return float(clamp(haversine_km(home_lat, home_lon, lat, lon), 0, 5000))
             except Exception:
                 return 0.0
@@ -172,11 +163,7 @@ def merchant_frequency(history: List[Tx], merchant: str) -> float:
     m = merchant.strip().lower()
     if not m or len(history) == 0:
         return 0.0
-    c = 0
-    for h in history:
-        hm = (h.merchant or "").strip().lower()
-        if hm and hm == m:
-            c += 1
+    c = sum(1 for h in history if (h.merchant or "").strip().lower() == m)
     return c / max(1, len(history))
 
 
@@ -187,8 +174,7 @@ def price_zscore(history: List[Tx], merchant: str, amount: float) -> float:
 
     amounts: List[float] = []
     for h in history:
-        hm = (h.merchant or "").strip().lower()
-        if hm == m:
+        if (h.merchant or "").strip().lower() == m:
             try:
                 amounts.append(float(h.amount))
             except Exception:
@@ -200,17 +186,36 @@ def price_zscore(history: List[Tx], merchant: str, amount: float) -> float:
     mu = sum(amounts) / len(amounts)
     var = sum((x - mu) ** 2 for x in amounts) / max(1, (len(amounts) - 1))
     sigma = math.sqrt(var) if var > 1e-9 else 1.0
-    z = (float(amount) - mu) / sigma
-    return float(clamp(z, -6, 6))
+    return float(clamp((float(amount) - mu) / sigma, -6, 6))
+
+
+def recency_seconds(hist_times: List[datetime], tx_time: datetime) -> float:
+    """Seconds since the most recent prior transaction. Returns 3600 if no history."""
+    past = [t for t in hist_times if t < tx_time]
+    if not past:
+        return 3600.0
+    delta = (tx_time - max(past)).total_seconds()
+    return float(clamp(delta, 0, 86400))
+
+
+def merchant_entropy_score(recent_merchants: List[str]) -> float:
+    """Shannon entropy of merchant distribution, normalised to [0,1]."""
+    if not recent_merchants:
+        return 0.0
+    counts: Dict[str, int] = {}
+    for m in recent_merchants:
+        counts[m] = counts.get(m, 0) + 1
+    total = len(recent_merchants)
+    entropy = 0.0
+    for c in counts.values():
+        p = c / total
+        if p > 0:
+            entropy -= p * math.log2(p)
+    max_entropy = math.log2(len(counts)) if len(counts) > 1 else 1.0
+    return float(clamp(entropy / max_entropy if max_entropy > 0 else 0.0, 0.0, 1.0))
 
 
 def extract_features(tx: Tx, history: List[Tx]) -> Dict[str, Any]:
-    """
-    IMPORTANT:
-    This returns ONLY the columns your sklearn pipeline expects:
-      numeric: amount, hour, weekday, velocity_5m, velocity_1h, merchant_freq, distance_km, price_z
-      categorical: channel, category
-    """
     tx_time = parse_iso(tx.timestamp)
 
     hist_times: List[datetime] = []
@@ -221,8 +226,7 @@ def extract_features(tx: Tx, history: List[Tx]) -> Dict[str, Any]:
             pass
     hist_times.sort()
 
-    all_times = hist_times + [tx_time]
-    all_times.sort()
+    all_times = sorted(hist_times + [tx_time])
 
     velocity_5m = count_in_window(all_times, tx_time, CFG.window_5m_s)
     velocity_1h = count_in_window(all_times, tx_time, CFG.window_1h_s)
@@ -233,6 +237,14 @@ def extract_features(tx: Tx, history: List[Tx]) -> Dict[str, Any]:
     merchant = (tx.merchant or "").strip()
     category = (tx.category or "Other").strip() or "Other"
 
+    # Recent merchants in 1h window for entropy
+    cutoff_1h = tx_time - timedelta(seconds=CFG.window_1h_s)
+    recent_merchants = [
+        (h.merchant or "").strip()
+        for h, t in zip(history, hist_times)
+        if t >= cutoff_1h and (h.merchant or "").strip()
+    ] + ([merchant] if merchant else [])
+
     feats: Dict[str, Any] = {
         "amount": float(tx.amount),
         "hour": int(hour),
@@ -242,6 +254,8 @@ def extract_features(tx: Tx, history: List[Tx]) -> Dict[str, Any]:
         "merchant_freq": float(merchant_frequency(history, merchant)),
         "distance_km": float(location_to_distance_km(tx.location)),
         "price_z": float(price_zscore(history, merchant, float(tx.amount))),
+        "recency_s": float(recency_seconds(hist_times, tx_time)),
+        "merchant_entropy": float(merchant_entropy_score(recent_merchants)),
         "channel": (tx.channel or "card").strip().lower(),
         "category": category,
     }
@@ -259,6 +273,8 @@ def build_reasons(feats: Dict[str, Any], proba: float) -> List[Reason]:
     price_z = float(feats.get("price_z", 0))
     hour = int(feats.get("hour", 0))
     category = str(feats.get("category", "Other"))
+    recency_s = float(feats.get("recency_s", 3600))
+    merchant_entropy = float(feats.get("merchant_entropy", 0))
 
     # Amount
     if amount >= 300:
@@ -268,7 +284,7 @@ def build_reasons(feats: Dict[str, Any], proba: float) -> List[Reason]:
     else:
         reasons.append(Reason(feature="amount", impact=-0.05, note=f"Amount appears typical: ${amount:.2f}"))
 
-    # Velocity
+    # Velocity 5m
     if velocity_5m >= 4:
         reasons.append(Reason(feature="velocity_5m", impact=0.28, note=f"{velocity_5m} transactions in last 5 minutes"))
     elif velocity_5m >= 3:
@@ -276,6 +292,7 @@ def build_reasons(feats: Dict[str, Any], proba: float) -> List[Reason]:
     else:
         reasons.append(Reason(feature="velocity_5m", impact=-0.04, note="No unusual burst detected (5m)"))
 
+    # Velocity 1h
     if velocity_1h >= 12:
         reasons.append(Reason(feature="velocity_1h", impact=0.14, note=f"{velocity_1h} transactions in last hour"))
     elif velocity_1h >= 8:
@@ -299,9 +316,25 @@ def build_reasons(feats: Dict[str, Any], proba: float) -> List[Reason]:
 
     # Price deviation
     if abs(price_z) >= 2.5:
-        reasons.append(Reason(feature="price_z", impact=0.14, note="Amount deviates from this merchant’s typical pricing"))
+        reasons.append(Reason(feature="price_z", impact=0.14, note="Amount deviates from this merchant's typical pricing"))
     elif abs(price_z) >= 1.8:
         reasons.append(Reason(feature="price_z", impact=0.08, note="Slight price outlier for this merchant"))
+
+    # Recency
+    if 0 < recency_s < 30:
+        reasons.append(Reason(feature="recency_s", impact=0.22, note=f"Rapid-fire: {recency_s:.0f}s since last transaction"))
+    elif recency_s < 120:
+        reasons.append(Reason(feature="recency_s", impact=0.12, note=f"Short gap: {recency_s:.0f}s since last transaction"))
+    else:
+        reasons.append(Reason(feature="recency_s", impact=-0.03, note=f"Normal gap: {recency_s:.0f}s since last transaction"))
+
+    # Merchant entropy
+    if merchant_entropy > 0.85:
+        reasons.append(Reason(feature="merchant_entropy", impact=0.18, note="High merchant diversity in recent window"))
+    elif merchant_entropy > 0.65:
+        reasons.append(Reason(feature="merchant_entropy", impact=0.08, note="Moderately diverse merchant pattern"))
+    else:
+        reasons.append(Reason(feature="merchant_entropy", impact=-0.03, note="Consistent merchant pattern"))
 
     # Time of day
     if hour <= 5:
@@ -317,15 +350,11 @@ def build_reasons(feats: Dict[str, Any], proba: float) -> List[Reason]:
     return reasons[:6]
 
 
-def score_with_model(model: Any, feats: Dict[str, Any]) -> Tuple[float, float]:
-    """
-    Returns (proba, riskScore 0..10).
-    Model is a sklearn Pipeline with predict_proba.
-    """
-    import pandas as pd  # keep here so app can still boot without pandas until /score is hit
+def score_with_model(pipeline: Any, feats: Dict[str, Any]) -> Tuple[float, float]:
+    import pandas as pd
 
     X = pd.DataFrame([feats])
-    proba = float(model.predict_proba(X)[0][1])
+    proba = float(pipeline.predict_proba(X)[0][1])
     proba = float(clamp(proba, 0.0, 1.0))
     risk = float(clamp(round(proba * 10, 1), 0.0, 10.0))
     return proba, risk
@@ -343,7 +372,8 @@ def root() -> Dict[str, str]:
 def health() -> Dict[str, Any]:
     return {
         "ok": True,
-        "modelLoaded": MODEL is not None,
+        "modelLoaded": PIPELINE is not None,
+        "threshold": THRESHOLD,
         "modelPath": str(MODEL_PATH),
         "schemaPath": str(SCHEMA_PATH),
         "schemaExists": SCHEMA_PATH.exists(),
@@ -354,8 +384,7 @@ def health() -> Dict[str, Any]:
 def score(req: ScoreRequest) -> ScoreResponse:
     feats = extract_features(req.transaction, req.history)
 
-    if MODEL is None:
-        # Stub fallback keeps frontend functional if model missing
+    if PIPELINE is None:
         proba = 0.50
         risk = 5.0
         reasons = [
@@ -364,7 +393,7 @@ def score(req: ScoreRequest) -> ScoreResponse:
         ]
         return ScoreResponse(riskScore=risk, velocity=int(feats["velocity_5m"]), reasons=reasons)
 
-    proba, risk = score_with_model(MODEL, feats)
+    proba, risk = score_with_model(PIPELINE, feats)
     reasons = build_reasons(feats, proba)
 
     return ScoreResponse(

@@ -1,19 +1,6 @@
 {
-  "numeric": [
-    "amount",
-    "hour",
-    "weekday",
-    "velocity_5m",
-    "velocity_1h",
-    "merchant_freq",
-    "distance_km",
-    "price_z"
-  ],
-  "categorical": [
-    "channel",
-    "category"
-  ],
-  "all": [
+  "label": "fraud",
+  "numeric_features": [
     "amount",
     "hour",
     "weekday",
@@ -22,9 +9,31 @@
     "merchant_freq",
     "distance_km",
     "price_z",
+    "recency_s",
+    "merchant_entropy"
+  ],
+  "categorical_features": [
     "channel",
     "category"
   ],
-  "label": "fraud",
-  "notes": "Must match app.py extract_features() output keys."
+  "all_features": [
+    "amount",
+    "hour",
+    "weekday",
+    "velocity_5m",
+    "velocity_1h",
+    "merchant_freq",
+    "distance_km",
+    "price_z",
+    "recency_s",
+    "merchant_entropy",
+    "channel",
+    "category"
+  ],
+  "threshold": 0.35552630517227474,
+  "notes": [
+    "timestamp/id/merchant/location are NOT model inputs; they derive features like hour/weekday/distance/merchant_freq/velocity/recency_s/merchant_entropy.",
+    "Categoricals are one-hot encoded with handle_unknown='ignore' so scoring won't crash on unseen categories.",
+    "Model is HistGradientBoostingClassifier wrapped in CalibratedClassifierCV (isotonic)."
+  ]
 }
